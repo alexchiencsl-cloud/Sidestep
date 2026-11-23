@@ -45,7 +45,7 @@
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>閃身步！老婆來了快跑！</title>
-<meta name="description" content="三條跑道往遠方延伸，左右閃身吃金幣、躲陷阱，存金幣幫角色買衣服；按下大招「狗熊哆嗦毛」，五秒內左右狂抖、把障礙物全部踢倒。">
+<meta name="description" content="三條跑道往遠方延伸，左右閃身吃金幣、躲陷阱，存金幣幫角色買衣服；按下大招「閃身步plus」，五秒內化成殘影、無敵，把障礙物全部彈開。">
 <style>
 :root {
   --bg: #f4f1ea;
@@ -110,21 +110,22 @@ html, body {
 #boss-hp .bar i { display: block; height: 100%; background: #e8513a; }
 #boss-hp .num { font-size: 12px; font-variant-numeric: tabular-nums; min-width: 34px; }
 #quiz {
-  position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 6;
-  width: min(360px, calc(100% - 32px)); padding: 12px; border-radius: 20px; box-sizing: border-box;
+  position: fixed; left: 50%; top: 56%; transform: translateX(-50%); z-index: 6;
+  width: min(380px, calc(100% - 32px)); padding: 12px; border-radius: 20px; box-sizing: border-box;
   background: rgba(255, 255, 255, 0.96); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); touch-action: none;
 }
-#quiz.done { opacity: 0.6; pointer-events: none; }
-.quiz-top { display: flex; justify-content: space-between; align-items: center; margin: 0 4px 10px; font-weight: 800; }
-#quiz-ans { font-size: 24px; font-variant-numeric: tabular-nums; }
-#quiz-time { min-width: 36px; padding: 2px 10px; border-radius: 14px; background: #e8513a; color: #fff; font-size: 18px; text-align: center; font-variant-numeric: tabular-nums; }
-.quiz-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+#quiz.done { pointer-events: none; }
+.quiz-top { display: flex; justify-content: space-between; align-items: center; margin: 0 4px 6px; font-weight: 800; font-size: 14px; color: var(--muted); }
+#quiz-q { margin: 0 4px 10px; font-size: 17px; font-weight: 800; line-height: 1.4; }
+#quiz-opts { display: grid; gap: 8px; }
 #quiz button {
-  height: 46px; border: 0; border-radius: 12px; background: #f0f0f3; color: #1d1d1f;
-  font-family: inherit; font-size: 22px; font-weight: 800; cursor: pointer; touch-action: none;
+  min-height: 46px; padding: 8px 14px; border: 0; border-radius: 12px; background: #f0f0f3; color: #1d1d1f;
+  font-family: inherit; font-size: 17px; font-weight: 800; text-align: left; cursor: pointer; touch-action: none;
 }
-#quiz .del { font-size: 18px; }
-#quiz #quiz-ok { width: 100%; margin-top: 8px; background: #e8513a; color: #fff; font-size: 18px; }
+#quiz button b { display: inline-block; width: 24px; height: 24px; margin-right: 10px; border-radius: 12px; background: #1d1d1f; color: #fff; font-size: 13px; line-height: 24px; text-align: center; }
+#quiz button.ok { background: #2c9a5a; color: #fff; }
+#quiz button.bad { background: #e8513a; color: #fff; }
+#quiz-msg { min-height: 18px; margin: 8px 4px 0; font-size: 14px; font-weight: 700; color: var(--muted); text-align: center; }
 @media (prefers-reduced-motion: reduce) { #provoke { animation: none; } }
 #sound {
   position: fixed; top: max(12px, env(safe-area-inset-top)); right: 16px; z-index: 5;
@@ -340,20 +341,16 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
 </div>
 <button id="provoke" hidden>頂嘴</button>
 <div id="quiz" hidden>
-  <div class="quiz-top"><span id="quiz-ans">x = ?</span><span id="quiz-time">10</span></div>
-  <div class="quiz-keys">
-    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
-    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
-    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
-    <button data-k="−">−</button><button data-k="0">0</button><button data-k="⌫" class="del">刪除</button>
-  </div>
-  <button id="quiz-ok">確定</button>
+  <div class="quiz-top"><span id="quiz-ans">第 1 / 3 題</span></div>
+  <p id="quiz-q"></p>
+  <div id="quiz-opts"></div>
+  <p id="quiz-msg"></p>
 </div>
 <div id="keys" hidden>
   <button id="kl" aria-label="往左">◀</button>
   <button id="kr" aria-label="往右">▶</button>
 </div>
-<button id="ult" aria-label="大招：狗熊哆嗦毛" hidden><span class="nm">狗熊<br>哆嗦毛</span><span class="cd" id="ult-cd"></span></button>
+<button id="ult" aria-label="大招：閃身步plus" hidden><span class="nm">閃身步<br>plus</span><span class="cd" id="ult-cd"></span></button>
 <div id="lobby">
   <div id="danmaku" aria-hidden="true"></div>
   <div class="wallet"><span class="coin-ico" data-coin></span><span id="wallet">0</span></div>
@@ -386,7 +383,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
           <ul>
           <li><canvas class="art" data-art="run" width="120" height="90"></canvas><span>角色會自己往前跑，你負責左右換跑道。</span></li>
           <li><canvas class="art" data-art="coin" width="120" height="90"></canvas><span>吃到一枚金幣加 10 分，跑越遠分數也越高。</span></li>
-          <li><canvas class="art" data-art="trap" width="120" height="90"></canvas><span>撞到尖刺或柵欄會少一顆心，心用完就結束。</span></li>
+          <li><canvas class="art" data-art="trap" width="120" height="90"></canvas><span>撞到尖刺或柵欄會少一顆心，心用完就結束。一開始有 3 顆心，每跑 500 公尺自動回復一顆，最多 5 顆。</span></li>
           <li><canvas class="art" data-art="speed" width="120" height="90"></canvas><span>越跑越快，被撞到會慢下來。</span></li>
           <li><canvas class="art" data-art="wallet" width="120" height="90"></canvas><span>這局的金幣會在結束時存進錢包。</span></li>
           </ul>
@@ -403,21 +400,21 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
           <h3>道具與大招</h3>
           <ul>
           <li><canvas class="art" data-art="shield" width="120" height="90"></canvas><span><b>降噪耳機</b>：路上偶爾出現。吃到後 6 秒內，陷阱會被彈開；打老婆大人時，彈開的障礙物一定會砸中她。</span></li>
-          <li><canvas class="art" data-art="bear" width="120" height="90"></canvas><span><b>狗熊哆嗦毛</b>：按下後 5 秒內左右狂抖。撞到陷阱基本九成會踢倒（可用深蹲提高），沒踢倒就少一顆心並中斷大招；水坑不會傷到你。</span></li>
+          <li><canvas class="art" data-art="bear" width="120" height="90"></canvas><span><b>閃身步plus</b>：按下後 5 秒內，人物變成殘影左右狂閃，完全無敵：碰到的障礙物 100% 彈開，Boss 的攻擊打到也不會少血。</span></li>
           <li><canvas class="art" data-art="bearAfter" width="120" height="90"></canvas><span>大招期間不能換跑道，再按一次可以提早停。結束時會回到最近的跑道中央，接著 1.5 秒半透明，什麼都碰不到（金幣也吃不到）。用完要等 10 秒。</span></li>
           </ul>
         </section>
         <section class="hp-page">
           <h3>Boss 規則</h3>
           <ul>
-          <li><canvas class="art" data-art="bossQueue" width="120" height="90"></canvas><span>每個 Boss 都有出場距離：老婆大人 1000 公尺、婆婆 5000 公尺、作業烤卷 8000 公尺。跑到了，上一個還沒打完，就等上一個打完馬上出現。</span></li>
+          <li><canvas class="art" data-art="bossQueue" width="120" height="90"></canvas><span>每個 Boss 都有出場距離：老婆大人 600 公尺、婆婆 1800 公尺、白人勳 3000 公尺。跑到了，上一個還沒打完，就等上一個打完馬上出現。</span></li>
           <li><canvas class="art" data-art="bossNoSpeed" width="120" height="90"></canvas><span>Boss 還在的時候，買來的<b>強力瑪卡</b>沒有效果；打倒之後（若有道歉花束，要吃完花束）才恢復。</span></li>
           </ul>
         </section>
         <section class="hp-page">
           <h3>Boss：老婆大人</h3>
           <ul>
-          <li><canvas class="art" data-art="bossCome" width="120" height="90"></canvas><span>跑到 1000 公尺，老婆大人會擋在前面。</span></li>
+          <li><canvas class="art" data-art="bossCome" width="120" height="90"></canvas><span>跑到 600 公尺，老婆大人會擋在前面。</span></li>
           <li><canvas class="art" data-art="bossBook" width="120" height="90"></canvas><span>跑道變紅就換道，躲開待辦清單。降噪耳機擋不住。</span></li>
           <li><canvas class="art" data-art="bossStun" width="120" height="90"></canvas><span>被打到要停下來被叨念 3 秒，只能閃身躲便條紙。便條紙打到少一顆心。剩 1 滴血時要叨念 5 秒，便條紙一次丟兩張。</span></li>
           <li><canvas class="art" data-art="bossKick" width="120" height="90"></canvas><span>吃到降噪耳機的 6 秒內，碰到的障礙物 100% 會彈起來砸向老婆大人，不用追到她身邊。放大招踢開的障礙物，在她追到身邊時也會砸她。</span></li>
@@ -427,7 +424,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
         <section class="hp-page">
           <h3>Boss：婆婆</h3>
           <ul>
-          <li><canvas class="art" data-art="oppCome" width="120" height="90"></canvas><span>跑到 5000 公尺，婆婆的大頭會浮在空中，兩隻大手在旁邊。</span></li>
+          <li><canvas class="art" data-art="oppCome" width="120" height="90"></canvas><span>跑到 1800 公尺，婆婆的大頭會浮在空中，兩隻大手在旁邊。</span></li>
           <li><canvas class="art" data-art="oppNuke" width="120" height="90"></canvas><span><b>階段一</b>：每 16 秒丟一顆小抱孫彈。躲不掉，打到少一顆心並碎念上身。</span></li>
           <li><canvas class="art" data-art="oppPoison" width="120" height="90"></canvas><span>碎念上身不會自己好，角色會變綠，碎念上身越多次越綠。左上角會記碎念上身幾次。</span></li>
           <li><canvas class="art" data-art="oppProvoke" width="120" height="90"></canvas><span>他會一直丟，直到你按右上角的<b>頂嘴</b>（電腦按 ↑）。要先踢倒 15 個障礙物（降噪耳機彈開、大招踢倒都算），頂嘴才會開放。</span></li>
@@ -437,38 +434,34 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
           <h3>婆婆（續）</h3>
           <ul>
           <li><canvas class="art" data-art="oppCount" width="120" height="90"></canvas><span><b>階段二</b>：開始倒數 30 秒。這 30 秒內要閃身 50 下，讓他瞎掉。</span></li>
-          <li><canvas class="art" data-art="oppBoom" width="120" height="90"></canvas><span>倒數完還沒閃到 50 下，原子彈落下，遊戲結束。</span></li>
+          <li><canvas class="art" data-art="oppBoom" width="120" height="90"></canvas><span>倒數完還沒閃到 50 下，情緒勒索炸彈落下，遊戲結束。</span></li>
           <li><canvas class="art" data-art="oppBlind" width="120" height="90"></canvas><span><b>階段三</b>：他瞎了以後，放大招就能打倒他，得 4000 金幣。</span></li>
           <li><canvas class="art" data-art="oppCure" width="120" height="90"></canvas><span>打倒後，碎念上身幾次就會有幾瓶<b>道歉花束</b>藏在障礙物裡，隔一兩排一瓶。大招後半透明時也吃得到。漏吃任何一瓶，經過最後一瓶時會氣到昏倒。吃完前大招不加速。</span></li>
           </ul>
         </section>
         <section class="hp-page">
-          <h3>Boss：作業烤卷</h3>
+          <h3>Boss：白人勳</h3>
           <ul>
-          <li><canvas class="art" data-art="rollCome" width="120" height="90"></canvas><span>跑到 8000 公尺，一張會彎曲的黃色考卷浮在空中。有 2500 滴血。</span></li>
-          <li><canvas class="art" data-art="rollBurn" width="120" height="90"></canvas><span>出現 8 秒後被怒火燒起來，路上的障礙物會瞬間燒光。</span></li>
-          <li><canvas class="art" data-art="rollLava" width="120" height="90"></canvas><span>前方鋪滿花花綠綠的玩具，只剩一條彎彎曲曲的乾淨地板。彎道很密，跑越快彎得越少。</span></li>
-          <li><canvas class="art" data-art="rollHurt" width="120" height="90"></canvas><span>踩到玩具馬上少一顆心，痛到冒火，只有 0.3 秒無敵。</span></li>
-          <li><canvas class="art" data-art="rollFire" width="120" height="90"></canvas><span>考卷在場時路上沒有障礙物、金幣和道具。腳下還沒有玩具時，天上會不斷砸下兩口煎糊的鍋，速度極快。</span></li>
+          <li><canvas class="art" data-art="rollCome" width="120" height="90"></canvas><span>跑到 3000 公尺，長得很像某位輝達創辦人的白人勳會浮在空中出場。路上的障礙物會被他清光，他在場時也不會再生出障礙物、金幣和道具。</span></li>
+          <li><canvas class="art" data-art="rollFire" width="120" height="90"></canvas><span>他會不停丟顯示卡，一次兩條跑道，砸中少一顆心，所以要一直閃身。降噪耳機能擋一次，閃身步plus 期間不會被砸。</span></li>
+          <li><canvas class="art" data-art="rollStreak" width="120" height="90"></canvas><span>連續 6 秒都沒被砸中，他就會停下一切，飛到畫面中間出題。被砸中就從頭重算 6 秒。</span></li>
           </ul>
         </section>
         <section class="hp-page">
-          <h3>作業烤卷（續）</h3>
+          <h3>白人勳（續）</h3>
           <ul>
-          <li><canvas class="art" data-art="rollQuiz" width="120" height="90"></canvas><span>連續 6 秒都踩在正常路面上，考卷會停下一切、飛到畫面中間出一題一元一次方程式。</span></li>
-          <li><canvas class="art" data-art="rollKeys" width="120" height="90"></canvas><span>15 秒內用下方數字鍵作答（電腦可直接打數字、按 Enter）。答錯或時間到少一顆心。</span></li>
-          <li><canvas class="art" data-art="rollDmg" width="120" height="90"></canvas><span>玩具在場的每一秒，考卷會扣「扣血量」滴血（一開始 20）。答對時扣血量 +20，考卷再扣 100 滴。</span></li>
-          <li><canvas class="art" data-art="rollRest" width="120" height="90"></canvas><span>不管答對答錯，玩具都會收起來 8 秒，再灑滿地。血越少，考卷越破。你每少一顆心，考卷回 200 滴血（最多 2500）。</span></li>
-          <li><canvas class="art" data-art="rollAsh" width="120" height="90"></canvas><span>打倒後考卷化成灰燼，得 7000 金幣。</span></li>
+          <li><canvas class="art" data-art="rollQuiz" width="120" height="90"></canvas><span>總共要答 3 題，每題三選一：點選項（電腦按 1／2／3）。</span></li>
+          <li><canvas class="art" data-art="rollRetry" width="120" height="90"></canvas><span>答錯不扣血，但要再連續閃躲 6 秒，他才會重問同一題，直到答對為止。</span></li>
+          <li><canvas class="art" data-art="rollAsh" width="120" height="90"></canvas><span>三題都答對，白人勳就會消失，遊戲破關，得 7000 金幣。</span></li>
           </ul>
         </section>
         <section class="hp-page">
           <h3>車庫</h3>
           <ul>
           <li><canvas class="art" data-art="clothes" width="120" height="90"></canvas><span><b>衣服</b>：換造型用，不影響能力。</span></li>
-          <li><canvas class="art" data-art="heart" width="120" height="90"></canvas><span><b>浪漫燭光晚餐</b>：10000 金幣，老婆好感度 +1，每局開始的愛心上限多一顆（可重複買）。</span></li>
+          <li><canvas class="art" data-art="heart" width="120" height="90"></canvas><span><b>浪漫燭光晚餐</b>：10000 金幣，老婆好感度 +1，每局開始多一顆愛心（一開始 3 顆，最多買到 5 顆）。</span></li>
           <li><canvas class="art" data-art="kickPromo" width="120" height="90"></canvas><span><b>耳機常備</b>：50 金幣，降噪耳機出現頻率 +1%（一開始 100%）。頻率 200% 就是路上出現的間隔縮短一半，越常吃到耳機就越常浪子踢球。頻率到 3000% 時，每 20 秒會有一副降噪耳機從天上砸到你頭上；之後每多 2000%，間隔少 1 秒，最快 1 秒一副（41000%）。</span></li>
-          <li><canvas class="art" data-art="bearDodge" width="120" height="90"></canvas><span><b>深蹲</b>：300 金幣，大招撞到陷阱的踢倒機率 +1%（一開始 90%）。到 100% 就一定踢倒；之後每再買一個，大招每踢倒一個障礙物多拿 1 金幣（例如買到 110%，一次踢倒多拿 10 金幣）。</span></li>
+          <li><canvas class="art" data-art="bearDodge" width="120" height="90"></canvas><span><b>深蹲</b>：300 金幣，每買一個，閃身步plus 每彈開一個障礙物就多拿 1 金幣（買 10 個，彈開一個多拿 10 金幣）。</span></li>
           </ul>
         </section>
         <section class="hp-page">
@@ -484,7 +477,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
           <h3>操作</h3>
           <ul>
           <li><canvas class="art" data-art="reset" width="120" height="90"></canvas><span><b>重置進度</b>：暫停選單最下面，要確認三次才會清掉金幣、衣服與所有道具。</span></li>
-          <li><canvas class="art" data-art="keys" width="120" height="90"></canvas><span><b>電腦</b>：← → 換跑道，↓ 放大招，↑ 頂嘴，空白鍵開始，Esc 暫停。作業烤卷出題時直接打數字，按 Enter 作答。</span></li>
+          <li><canvas class="art" data-art="keys" width="120" height="90"></canvas><span><b>電腦</b>：← → 換跑道，↓ 放大招，↑ 頂嘴，空白鍵開始，Esc 暫停。白人勳出題時按 1／2／3 選答案。</span></li>
           <li><canvas class="art" data-art="phone" width="120" height="90"></canvas><span><b>手機</b>：左右滑或按 ◀ ▶ 換跑道，按中間的按鈕放大招。</span></li>
           </ul>
         </section>
@@ -541,7 +534,9 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   let ctx = mainCtx;
   const $ = (id) => document.getElementById(id);
 
-  const BASE_HP = 5;
+  const BASE_HP = 3;
+  const HP_CAP = 5;
+  const HEAL_DIST = 500;
   // 看廣告復活：開新分頁看廣告，回到遊戲且離開超過 AD_MIN_MS 才復活；每場最多 REVIVE_MAX 次
   const AD_URL = 'https://uplcm.com/4/12128613';
   const REVIVE_MAX = 2;
@@ -592,7 +587,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
 
   // Boss 1 老婆大人（BC 2026-11-19）：跑到 BOSS_DIST 公尺出現在前方；
   // 一直沒射中玩家就會被追近，追到 BOSS_MIN_D 後，浪子踢球彈開的障礙物會飛去打他
-  const BOSS_DIST = 1000;
+  const BOSS_DIST = 600;
   const BOSS_HP = 6;
   const BOSS_REWARD = 1500;
   const BOSS_START_D = 14;
@@ -624,7 +619,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   // Boss 2 婆婆（BC 2026-11-20）：5000 公尺出現，浮在空中的大頭＋掌心朝內的兩隻手
   // 階段一每 NUKE_GAP 秒丟一顆躲不掉的小抱孫彈（−1 心＋碎念上身，不會自己消氣），按「頂嘴」才停；
   // 階段二倒數 ATOMIC_TIME 秒，閃身 BLIND_STEPS 下弄瞎他，否則原子彈結束遊戲；階段三放大招就打倒他
-  const OPP_DIST = 5000;
+  const OPP_DIST = 1800;
   const OPP_REWARD = 4000;
   const OPP_D = 11;
   const OPP_SCALE = 7.5;
@@ -641,13 +636,18 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   // 踩到岩漿少一顆心；連續 ROLL_STREAK 秒都踩在路上，就停下來出一題一元一次方程式（ROLL_QUIZ 秒）
   // 答對「扣血量」+ROLL_DMG_STEP、Boss −ROLL_QUIZ_DMG；答錯或超時少一顆心；不論對錯岩漿收回 ROLL_REST 秒
   // 岩漿在場（不含答題）的每一秒，Boss 扣「扣血量」
-  const ROLL_DIST = 8000;
-  const ROLL_HP = 2500;
+  const ROLL_DIST = 3000;
+  const ROLL_HP = 3;   // 題數：答對一題少一格，三題都答對就破關
+  const ROLL_QS = [
+    { q: 'NVIDIA 最貴的消費級遊戲顯卡是什麼？', o: ['RTX PRO 6000', 'H100', 'RTX 5090'], a: 2 },
+    { q: 'NVIDIA 創辦人老婆的名字？', o: ['Lori Huang', 'Alice Huang', 'Kimberly Powell'], a: 0 },
+    { q: 'NVIDIA 核心晶片的代工廠商？', o: ['TSMC', 'Samsung', 'Hon Hai'], a: 0 },
+  ];
   const ROLL_REWARD = 7000;
   const ROLL_D = 11;
   const ROLL_SCALE = 5.2;
   const ROLL_LIFT = 0.42;
-  const ROLL_ATTACK_AT = 8;
+  const ROLL_ATTACK_AT = 3.5;
   const ROLL_DMG = 20;
   const ROLL_DMG_STEP = 20;
   const ROLL_QUIZ_DMG = 100;
@@ -670,8 +670,8 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   // 沒有岩漿地面時（等待燃燒、岩漿退去、岩漿還沒到腳下），每隔 FIRE_GAP 秒無預警從天上砸下兩顆火球（各一條跑道）
   // 火球從畫面頂端落到角色那排只要 FIRE_FALL 秒；落地時角色在那條跑道上就少一顆心（BC 2026-11-21）
   const FIRE_FALL = 0.8;
-  const FIRE_GAP_MIN = 1.8;
-  const FIRE_GAP_MAX = 2.4;
+  const FIRE_GAP_MIN = 1.0;
+  const FIRE_GAP_MAX = 1.4;
   const FIRE_HIT_HALF = 0.45;
   const FIRE_HURT_INV = 0.8;
   // 作業烤卷在場時，玩家每少一顆心，考卷回 ROLL_HEAL 滴血（最多回到 ROLL_HP）
@@ -685,8 +685,8 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   // 跑道橫紋每 4 公尺一段；每幀移動超過半段會像倒轉或定格，所以畫面上的條紋速度封頂
   const ROAD_VIS_SPEED = 36;
   // 依序出場；前一個還沒打完就到了下一個的距離，等前一個打完（倒下動畫結束）馬上出現
-  const BOSSES = [{ kind: 'einstein', dist: 1000 }, { kind: 'oppen', dist: OPP_DIST }, { kind: 'roll', dist: ROLL_DIST }];
-  const BOSS_NAMES = { einstein: '老婆大人', oppen: '婆婆', roll: '作業烤卷' };
+  const BOSSES = [{ kind: 'einstein', dist: BOSS_DIST }, { kind: 'oppen', dist: OPP_DIST }, { kind: 'roll', dist: ROLL_DIST }];
+  const BOSS_NAMES = { einstein: '老婆大人', oppen: '婆婆', roll: '白人勳' };
   // 浮在空中不受遠近縮小：畫面大小固定在「4.5 公尺遠時」的大小（以跑道寬為單位）
   const oppSize = (d) => OPP_SCALE * d / 4.5;
   // 碎念上身越多次越綠：1 次約 1/4、3 次過半、最多 85%
@@ -733,7 +733,11 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     for (let i = 0; i < rowsN; i++) if (nagRows[i] <= now) free.push(i);
     if (!free.length) return;
     const row = free[Math.floor(Math.random() * free.length)];
-    let k; do { k = Math.floor(Math.random() * NAGS.length); } while (k === nagLast && NAGS.length > 1);
+    // 畫面上已經有的句子不重複出現
+    const onScreen = new Set([...box.children].map((el) => el.textContent));
+    const pool = NAGS.map((_, i) => i).filter((i) => i !== nagLast && !onScreen.has(NAGS[i]));
+    if (!pool.length) return;
+    const k = pool[Math.floor(Math.random() * pool.length)];
     nagLast = k;
     const sp = document.createElement('span');
     sp.textContent = NAGS[k];
@@ -797,13 +801,13 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   let outfitId = store.get('plus-outfit');
   if (!owned.has(outfitId) || !OUTFITS.some((o) => o.id === outfitId)) outfitId = 'basic';
   let extraHearts = Math.max(0, Math.floor(Number(store.get('plus-hearts')) || 0));
-  const maxHp = () => BASE_HP + extraHearts;
+  const maxHp = () => Math.min(HP_CAP, BASE_HP + extraHearts);
   // 抖腿修練率：基本 90%，衣櫃每買一次（300 金幣）加 1%，不設上限（BC 2026-10-18）；
   // 超過 100% 的部分，每 1% 在踢倒障礙物時多給 KICK_BONUS 枚金幣（低於 100% 不扣）
   let bearUps = Math.max(0, Math.floor(Number(store.get('plus-bear')) || 0));
   const bearRate = () => BEAR_BASE + bearUps;
   const KICK_BONUS = 1;
-  const kickBonus = () => Math.max(0, bearRate() - 100) * KICK_BONUS;
+  const kickBonus = () => bearUps * KICK_BONUS;
   // 大招持續時間：基本 5 秒，衣櫃每買一次（500 金幣）加 1 秒，最多 60 秒（BC 2026-10-24）；舊紀錄超過的直接壓回 60 秒
   let bearSecs = Math.min(BEAR_TIME_MAX - BEAR_TIME, Math.max(0, Math.floor(Number(store.get('plus-bear-time')) || 0)));
   const bearTime = () => BEAR_TIME + bearSecs;
@@ -846,7 +850,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     return O && !owned.has(O.id) ? O.price : 0;
   };
   const STACKABLE = {
-    [HEART_ID]: { price: HEART_PRICE, add: (n) => { extraHearts += n; } },
+    [HEART_ID]: { price: HEART_PRICE, add: (n) => { extraHearts += n; }, room: () => Math.max(0, HP_CAP - maxHp()) },
     [BEAR_ID]: { price: BEAR_PRICE, add: (n) => { bearUps += n; } },
     [BEAR_TIME_ID]: { price: BEAR_TIME_PRICE, add: (n) => { bearSecs += n; }, room: () => BEAR_TIME_MAX - bearTime() },
     [BOOST_ID]: { price: BOOST_PRICE, add: (n) => { boosts += n; boostOn = true; } },
@@ -919,6 +923,18 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   // 音量平衡（2026-11-14 實測 momentary 響度）：音效放大、語音收小，三者都落在背景音樂上方 2–5 LU
   const SFX_GAIN = 2.8;
   const VOICE_GAIN = 0.9;
+  // 金幣音效：高音「叮」加五度泛音，連續吃會沿著音階往上爬；購買則是三連音的「叮鈴鈴」
+  const COIN_NOTES = [1568, 1760, 1976, 2349];
+  function coinSfx(i) {
+    const f = COIN_NOTES[i % COIN_NOTES.length];
+    beep(f, 0.24, 'sine', 0.075);
+    beep(f * 1.5, 0.16, 'sine', 0.035);
+  }
+  function cashSfx() {
+    beep(1568, 0.2, 'sine', 0.07);
+    setTimeout(() => { beep(2093, 0.28, 'sine', 0.07); beep(3136, 0.18, 'sine', 0.03); }, 90);
+    setTimeout(() => beep(2637, 0.38, 'sine', 0.065), 190);
+  }
   function beep(freq, dur, type = 'sine', vol = 0.15, slide = 0) {
     if (!soundOn) return;
     try {
@@ -1049,8 +1065,40 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     }
   }
 
-  function startBearDrums() {
-    if (!soundOn || !audio || drums.bus) return;
+  // 大招喊聲：用瀏覽器內建的中文語音一直喊「閃身步plus」；不支援語音時退回原本的預錄喊聲
+  const CHANT_TEXT = '閃身步plus';
+  const chant = { on: false };
+  const speechOk = () => typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance !== 'undefined';
+  function chantVoice() {
+    try {
+      const vs = window.speechSynthesis.getVoices();
+      return vs.find((v) => /zh[-_]TW/i.test(v.lang)) || vs.find((v) => /^zh/i.test(v.lang)) || null;
+    } catch (e) { return null; }
+  }
+  function chantSay() {
+    if (!chant.on) return;
+    try {
+      const u = new window.SpeechSynthesisUtterance(CHANT_TEXT);
+      u.lang = 'zh-TW';
+      const v = chantVoice();
+      if (v) u.voice = v;
+      u.rate = 1.5; u.pitch = 1.25; u.volume = Math.min(1, volume);
+      u.onend = () => { if (chant.on) setTimeout(chantSay, 40); };
+      u.onerror = () => { if (chant.on) { chant.on = false; startBearDrums(true); } };
+      window.speechSynthesis.speak(u);
+    } catch (e) { chant.on = false; startBearDrums(true); }
+  }
+
+  function startBearDrums(noSpeech = false) {
+    if (!soundOn || chant.on || drums.bus) return;
+    if (!noSpeech && speechOk()) {
+      chant.on = true;
+      try { window.speechSynthesis.cancel(); } catch (e) { /* 略過 */ }
+      if (music.bus && audio) music.bus.gain.setTargetAtTime(MUSIC_VOL / 2, audio.currentTime, 0.1);
+      chantSay();
+      return;
+    }
+    if (!audio) return;
     try {
       const g = audio.createGain();
       g.gain.value = 1.3;
@@ -1065,6 +1113,11 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   }
 
   function stopBearDrums() {
+    if (chant.on) {
+      chant.on = false;
+      try { window.speechSynthesis.cancel(); } catch (e) { /* 略過 */ }
+      if (music.bus && audio) music.bus.gain.setTargetAtTime(MUSIC_VOL, audio.currentTime, 0.2);
+    }
     if (!drums.bus) return;
     clearInterval(drums.timer);
     const g = drums.bus;
@@ -1077,7 +1130,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   // ---------- 遊戲狀態 ----------
   function newGame() {
     return {
-      hp: maxHp(), maxHp: maxHp(), coins: 0, dist: 0, steps: 0,
+      hp: maxHp(), maxHp: HP_CAP, healMark: 0, coins: 0, dist: 0, steps: 0,
       speed: BASE_SPEED, rampT: 0, lane: 1, fromLane: 0, dodgeT: DODGE_TIME,
       mode: MODES[mode], objs: [], spawnRemaining: BASE_SPEED * 0.8, roadOff: 0, t: 0,
       hurtT: 0, invT: 0, shake: 0, bubbleT: 0, bubbleSide: 1,
@@ -1187,6 +1240,16 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     if (g.bearT > 0 && !bossFighting(g) && !curePending(g)) g.speed *= speedMult();
     const dd = g.speed * dt;
     g.dist += dd;
+    // 每跑 HEAL_DIST 公尺自動回復一顆愛心，上限 HP_CAP
+    while (g.dist >= (g.healMark + 1) * HEAL_DIST) {
+      g.healMark++;
+      if (g.hp > 0 && g.hp < HP_CAP) {
+        g.hp++;
+        const hp_ = proj(0, PLAYER_D);
+        if (g.pops.length < 24) g.pops.push({ x: W / 2, y: hp_.y - hp_.s * laneW * 2.4, life: 1.2, text: '回復一顆愛心 ♥', color: '#e8513a' });
+        [0, 110].forEach((ms, i) => setTimeout(() => beep(659 * Math.pow(1.5, i), 0.16, 'triangle', 0.07), ms));
+      }
+    }
     g.roadOff = (g.roadOff + Math.min(g.speed, ROAD_VIS_SPEED) * dt) % 4;
     g.bgD += Math.min(g.speed, ROAD_VIS_SPEED) * dt;
     g.shieldT = Math.max(0, g.shieldT - dt);
@@ -1194,7 +1257,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     if (g.bearT > 0) {
       g.bearPhase += Math.PI * 2 * BEAR_FREQ * dt;
       g.bearGhostIn -= dt;
-      if (g.bearGhostIn <= 0) { g.ghosts.push({ x: playerLaneX(), life: 0.15 }); g.bearGhostIn = 0.05; }
+      if (g.bearGhostIn <= 0) { g.ghosts.push({ x: playerLaneX(), life: 0.3 }); g.bearGhostIn = 0.03; }
     }
 
     // 降噪耳機空投：計時到了就從天上掉下來（BC 2026-10-24）
@@ -1285,13 +1348,13 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
         o.hit = true;
         if (o.kind === 'coin') {
           g.coins++;
-          if (g.t >= g.nextCoinSound) { beep(1320, 0.1, 'square', 0.06, 1760); g.nextCoinSound = g.t + 0.06; }
+          if (g.t >= g.nextCoinSound) { g.coinNote = (g.coinNote || 0) + 1; coinSfx(g.coinNote); g.nextCoinSound = g.t + 0.06; }
           const p = proj((o.lane - 1) * laneW, PLAYER_D);
           if (g.pops.length < 24) g.pops.push({ x: p.x, y: p.y - p.s * laneW * 1.4, life: 0.6 });
           emit(g, p.x, p.y - p.s * laneW * 1.4, 5, { c: '#ffd84a', sp: 150, up: 60, r: 4, life: 0.45, gr: 200 });
         } else if (o.kind === 'shield') {
           pickShield(g);
-        } else if (g.bearT > 0 && (g.invT > 0 || Math.random() * 100 < bearRate())) {
+        } else if (g.bearT > 0) {
           countKick(g); debrisAt(g, o);
           kickTrap(g, o, bossNear(g));
         } else if (o.kind === 'puddle') {
@@ -1452,6 +1515,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   }
 
   function hurtByNote(g) {
+    if (g.bearT > 0) return;
     g.hp--; g.hurtT = 0.35; g.invT = 0.5; g.shake = 0.3;
     beep(120, 0.3, 'sawtooth', 0.15, 50);
     if (navigator.vibrate) navigator.vibrate(80);
@@ -1517,7 +1581,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
       if (s.kind === 'kick') { damageBoss(g); continue; }
       if (B.hp <= 0 || !playerOnLane(s.lane)) continue;
       if (s.kind === 'book' || s.kind === 'workbook') {
-        if (g.stunT > 0 || g.graceT > 0) continue;
+        if (g.stunT > 0 || g.graceT > 0 || g.bearT > 0) continue;
         startStun(g, s.stun);
         return;
       }
@@ -1587,7 +1651,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
 
   // 小抱孫彈躲不掉：落地一定少一顆心並多碎念上身一次（碎念上身不會自己解）
   function nukeHit(g) {
-    if (g.bearT > 0) stopBear(g);
+    if (g.bearT > 0) return;
     g.hp--; g.poison++;
     g.hurtT = 0.45; g.shake = 0.4; g.nukeFxT = 0.7;
     const pp = proj(playerLaneX() * laneW, PLAYER_D);
@@ -1755,7 +1819,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     const { holes, keep } = makeHoles();
     g.boss = {
       kind: 'roll', hp: ROLL_HP, d: ROLL_D + 8, x: 0, t: 0, introT: BOSS_INTRO,
-      mode: 'wait', modeT: ROLL_ATTACK_AT, dmg: ROLL_DMG, tick: 0, streak: 0,
+      mode: 'wait', modeT: ROLL_ATTACK_AT, dmg: ROLL_DMG, tick: 0, streak: 0, q: 0,
       lava: null, lavaGone: null, quiz: null, burns: [], ashes: null, holes, keep, centerK: 0,
       hitT: 0, dieT: 0, aimT: 0, warns: [], shots: [], safe: null,
       fires: [], fireT: 0, seenHp: g.hp,
@@ -1813,13 +1877,11 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   const onLavaPath = (L, wp, x) => lavaLanes(L, wp).some((l) => Math.abs(x - (l - 1)) <= LAVA_HIT_HALF);
 
   // 燒起來：路上的障礙物、金幣、降噪耳機瞬間燒光（道歉花束不燒，出場前已確認吃完），前方鋪岩漿
-  function igniteRoll(g) {
+  function startGpu(g) {
     const B = g.boss;
-    B.mode = 'lava'; B.streak = 0; B.tick = 0;
+    B.mode = 'gpu'; B.streak = 0; B.fireT = 0.6; B.fires = [];
     for (const o of g.objs) if (o.kind !== 'antidote' && !o.hit && o.d > 0.5 && B.burns.length < 40) B.burns.push({ lane: o.lane, d: o.d, t: 0 });
     g.objs = g.objs.filter((o) => o.kind === 'antidote');
-    B.lava = newLava(g);
-    extendLava(B.lava, g);
     beep(90, 0.6, 'sawtooth', 0.12, 220);
     if (navigator.vibrate) navigator.vibrate(60);
   }
@@ -1831,7 +1893,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     let x = p.x, y = p.y - s * ROLL_LIFT + Math.sin(B.t * 1.8) * s * 0.03, w = s * 0.62;
     const k = smooth(Math.min(1, B.centerK || 0));
     if (k > 0) {
-      const top = 136, cw = Math.max(160, Math.min(W * 0.9, 460, (H - 290 - top) / ROLL_ASPECT));
+      const top = 138, cw = Math.max(130, Math.min(W * 0.5, 230, (H * 0.3) / ROLL_ASPECT));
       x = mix(x, W / 2, k); w = mix(w, cw, k); y = mix(y, top + cw * ROLL_ASPECT / 2, k);
     }
     return { x, y, w, h: w * ROLL_ASPECT };
@@ -1848,7 +1910,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   }
 
   function lavaHurt(g, inv = LAVA_HURT_INV) {
-    if (g.bearT > 0) stopBear(g);
+    if (g.bearT > 0) return;
     g.hp--; g.hurtT = 0.35; g.invT = inv; g.shake = 0.3; g.rampT = 0; g.burnT = BURN_TIME;
     beep(110, 0.35, 'sawtooth', 0.15, 45);
     if (navigator.vibrate) navigator.vibrate(90);
@@ -1856,21 +1918,10 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   }
 
   // 玩家少了幾顆心，考卷就回幾份血
-  function rollHeal(g) {
-    const B = g.boss;
-    if (!isRoll(B)) return;
-    const lost = B.seenHp - g.hp;
-    B.seenHp = g.hp;
-    if (lost <= 0 || B.hp <= 0 || B.mode === 'dead' || B.hp >= ROLL_HP) return;
-    const n = Math.min(ROLL_HP - B.hp, lost * ROLL_HEAL);
-    B.hp += n;
-    const R = rollRect(B);
-    if (g.pops.length < 24) g.pops.push({ x: R.x, y: R.y - R.h * 0.55, life: 1.1, text: `+${n}`, color: '#2f9e44' });
-  }
+  function rollHeal() { /* 白人勳不回血：只看答對幾題 */ }
 
   // 腳下還沒有岩漿的時候才會下火球
-  const rollFireOn = (g, B) => B.introT <= 0 && B.hp > 0
-    && (B.mode === 'wait' || B.mode === 'rest' || (B.mode === 'lava' && g.dist + PLAYER_D < B.lava.start));
+  const rollFireOn = (g, B) => B.introT <= 0 && B.hp > 0 && B.mode === 'gpu';
 
   function updateFires(g, B, dt) {
     for (const f of B.fires) f.t += dt;
@@ -1880,7 +1931,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
       B.burns.push({ lane: f.lane, d: PLAYER_D, t: 0 });
       if (Math.abs(playerLaneX() - (f.lane - 1)) > FIRE_HIT_HALF || g.invT > 0 || g.graceT > 0) continue;
       if (g.shieldT > 0) { g.shieldT = 0; beep(600, 0.12, 'square', 0.06, 300); continue; }
-      lavaHurt(g, FIRE_HURT_INV);
+      { const hp0 = g.hp; lavaHurt(g, FIRE_HURT_INV); if (g.hp < hp0) B.streak = 0; }
       if (state !== 'play') return;
     }
     B.fires = B.fires.filter((f) => !f.done);
@@ -1896,8 +1947,8 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     const B = g.boss;
     if (g.bearT > 0) { stopBear(g); g.graceT = 0; }
     g.kickT = 0; g.bubbleT = 0; g.dodgeT = DODGE_TIME; g.fromLane = g.lane - 1;
-    B.mode = 'quiz';
-    B.quiz = { ...makeEquation(), t: ROLL_QUIZ, input: '', band: rollQuizBand(B), result: null, resultT: 0 };
+    B.mode = 'quiz'; B.fires = [];
+    B.quiz = { idx: B.q, picked: -1, result: null, resultT: 0 };
     [0, 120, 240].forEach((ms, i) => setTimeout(() => beep(523 + i * 131, 0.12, 'triangle', 0.07), ms));
   }
 
@@ -1911,60 +1962,51 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     if (Q.result) {
       Q.resultT -= dt;
       if (Q.resultT <= 0) finishRollQuiz(g);
-      return;
     }
-    Q.t = Math.max(0, Q.t - dt);
-    if (Q.t === 0) answerRoll(g, null);
-    rollHeal(g);
   }
 
-  function answerRoll(g, value) {
+  function answerRoll(g, pick) {
     const B = g.boss, Q = B && B.quiz;
     if (!rollQuizOn(g) || Q.result) return;
-    const ok = value === Q.answer;
-    Q.result = ok ? 'ok' : value == null ? 'timeout' : 'wrong';
-    Q.resultT = ok ? 0.9 : 1.6;
+    const ok = pick === ROLL_QS[Q.idx].a;
+    Q.picked = pick;
+    Q.result = ok ? 'ok' : 'wrong';
+    Q.resultT = ok ? 1 : 1.8;
     if (ok) {
-      B.dmg += ROLL_DMG_STEP;
-      hurtRoll(g, ROLL_QUIZ_DMG, false);
+      B.q++;
+      hurtRoll(g, 1, false);
       [0, 100, 200].forEach((ms, i) => setTimeout(() => beep(784 * Math.pow(1.26, i), 0.14, 'triangle', 0.08), ms));
       return;
     }
-    g.hp--; g.hurtT = 0.35; g.shake = 0.3;
-    beep(120, 0.3, 'sawtooth', 0.15, 50);
-    if (navigator.vibrate) navigator.vibrate(80);
-    if (g.hp <= 0) endGame();
+    // 答錯不扣血，但要再連續閃 6 秒才會重問同一題
+    beep(160, 0.35, 'sawtooth', 0.12, 70);
+    if (navigator.vibrate) navigator.vibrate(60);
   }
 
   function finishRollQuiz(g) {
     const B = g.boss;
-    B.quiz = null; B.streak = 0;
-    if (B.lava) B.lavaGone = { lava: B.lava, t: 0.5 };
-    B.lava = null;
+    B.quiz = null; B.streak = 0; B.fireT = 1;
     g.invT = Math.max(g.invT, 1);
     if (B.hp <= 0) { defeatRoll(g); return; }
-    B.mode = 'rest'; B.modeT = ROLL_REST;
+    B.mode = 'gpu';
   }
 
   function defeatRoll(g) {
     const B = g.boss;
-    B.hp = 0; B.mode = 'dead'; B.dieT = ROLL_DIE; B.quiz = null;
-    if (B.lava) B.lavaGone = { lava: B.lava, t: 0.5 };
-    B.lava = null;
-    B.ashes = Array.from({ length: 70 }, () => ({
+    B.hp = 0; B.mode = 'dead'; B.dieT = ROLL_DIE; B.quiz = null; B.fires = [];
+    B.ashes = Array.from({ length: 60 }, () => ({
       u: Math.random(), v: Math.random(), vx: (Math.random() - 0.5) * 0.5, vy: -(0.15 + Math.random() * 0.45),
-      r: 0.008 + Math.random() * 0.016, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 8, gray: Math.random(),
+      r: 0.012 + Math.random() * 0.02, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 8, gray: Math.random(),
     }));
     if (g.bossNext >= BOSSES.length) g.bossDone = true;
     g.coins += ROLL_REWARD;
     const pp = proj(0, PLAYER_D);
-    if (g.pops.length < 24) g.pops.push({ x: W / 2, y: pp.y - pp.s * laneW * 2.2, life: 1.6, text: `打倒作業烤卷！+${ROLL_REWARD}`, color: '#d99a00' });
+    if (g.pops.length < 24) g.pops.push({ x: W / 2, y: pp.y - pp.s * laneW * 2.2, life: 1.6, text: `三題全對！+${ROLL_REWARD}`, color: '#d99a00' });
     [0, 140, 280, 420, 560, 700].forEach((ms, i) => setTimeout(() => beep(440 * Math.pow(1.26, i), 0.2, 'triangle', 0.08), ms));
   }
 
   function updateRoll(g, dt) {
     const B = g.boss;
-    rollHeal(g);
     B.t += dt;
     B.hitT = Math.max(0, B.hitT - dt);
     B.introT = Math.max(0, B.introT - dt);
@@ -1974,54 +2016,30 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     const dd = g.speed * dt;
     for (const b of B.burns) { b.t += dt; b.d -= dd; }
     B.burns = B.burns.filter((b) => b.t < 0.7);
-    if (B.lavaGone) { B.lavaGone.t -= dt; if (B.lavaGone.t <= 0) B.lavaGone = null; }
     if (B.mode === 'dead') {
       B.dieT -= dt;
-      if (B.dieT <= 0) g.boss = null;
+      if (B.dieT <= 0) { g.boss = null; g.won = true; endGame(); }
       return;
     }
     updateFires(g, B, dt);
-    rollHeal(g);
     if (state !== 'play') return;
-    if (B.mode === 'wait' || B.mode === 'rest') {
+    if (B.mode === 'wait') {
       B.modeT -= dt;
-      if (B.modeT <= 0) igniteRoll(g);
+      if (B.modeT <= 0) startGpu(g);
       return;
     }
-    if (B.mode !== 'lava') return;
-    const L = B.lava;
-    extendLava(L, g);
-    B.tick += dt;
-    while (B.tick >= 1 && B.hp > 0) { B.tick -= 1; hurtRoll(g, B.dmg); }
-    if (B.hp <= 0) { defeatRoll(g); return; }
-    const wp = g.dist + PLAYER_D;
-    if (wp < L.start) return;
-    if (onLavaPath(L, wp, playerLaneX())) {
-      B.streak += dt;
-      if (B.streak >= ROLL_STREAK) startRollQuiz(g);
-    } else {
-      B.streak = 0;
-      if (g.invT <= 0) { lavaHurt(g); rollHeal(g); }
-    }
+    if (B.mode !== 'gpu') return;
+    // 連續 ROLL_STREAK 秒都沒被顯卡砸中（被砸到就重算）→ 出題
+    B.streak += dt;
+    if (B.streak >= ROLL_STREAK) startRollQuiz(g);
   }
 
-  function quizKey(k) {
+  function quizPick(i) {
     const g = game;
     if (state !== 'play' || !rollQuizOn(g) || g.boss.quiz.result) return;
-    const Q = g.boss.quiz;
-    if (k === '⌫') Q.input = Q.input.slice(0, -1);
-    else if (k === '−') Q.input = Q.input.startsWith('−') ? Q.input.slice(1) : '−' + Q.input;
-    else if (Q.input.replace('−', '').length < 3) Q.input += k;
-    beep(1000, 0.04, 'square', 0.03);
+    answerRoll(g, i);
   }
 
-  function quizSubmit() {
-    const g = game;
-    if (state !== 'play' || !rollQuizOn(g) || g.boss.quiz.result) return;
-    const digits = g.boss.quiz.input.replace('−', '');
-    if (!digits) { beep(140, 0.08, 'square', 0.06); return; }
-    answerRoll(g, (g.boss.quiz.input.startsWith('−') ? -1 : 1) * Number(digits));
-  }
 
   // 停下來被叨念：世界停住、Boss 往前跑遠，並朝玩家丟便條紙
   // 便條紙落點：平常一本（六成瞄準玩家）；剩 1 滴血時一次兩本（BC 2026-11-19），
@@ -2085,7 +2103,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     say('kick');
   }
 
-  // 狗熊哆嗦毛：五秒內在三條跑道間來回狂抖，撞到陷阱九成踢倒、一成受傷並中斷
+  // 閃身步plus：五秒內在三條跑道間來回狂抖，撞到陷阱九成踢倒、一成受傷並中斷
   function startBear() {
     if (state !== 'play') return;
     const g = game;
@@ -2125,7 +2143,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     const bonus = kickBonus();
     g.coins += bonus;
     const p = proj((o.lane - 1) * laneW, PLAYER_D);
-    if (g.pops.length < 24) g.pops.push({ x: p.x, y: p.y - p.s * laneW * 1.4, life: 0.6, text: bonus ? `踢倒！+${bonus}` : '踢倒！', color: '#8b5a2b' });
+    if (g.pops.length < 24) g.pops.push({ x: p.x, y: p.y - p.s * laneW * 1.4, life: 0.6, text: bonus ? `彈開！+${bonus}` : '彈開！', color: '#8b5a2b' });
   }
 
   const score = (g) => g.coins * 10 + Math.floor(g.dist / 2);
@@ -2541,15 +2559,41 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     const r = p.s * laneW * 0.22;
     const spin = Math.abs(Math.cos(t * 5));
     const y = p.y - r * 1.6;
+    const rx = Math.max(r * spin, r * 0.16);
     ctx.fillStyle = 'rgba(0,0,0,0.12)';
     ctx.beginPath(); ctx.ellipse(p.x, p.y, r * 0.8, r * 0.25, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#d99a00';
-    ctx.beginPath(); ctx.ellipse(p.x, y, Math.max(r * spin, r * 0.15) + r * 0.08, r, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#f2b705';
-    ctx.beginPath(); ctx.ellipse(p.x, y, Math.max(r * spin, r * 0.12), r * 0.9, 0, 0, Math.PI * 2); ctx.fill();
-    if (spin > 0.4) {
-      ctx.fillStyle = '#fff3c4';
-      ctx.beginPath(); ctx.ellipse(p.x - r * spin * 0.3, y - r * 0.3, r * spin * 0.18, r * 0.25, 0, 0, Math.PI * 2); ctx.fill();
+    // 金光：金幣外圍一圈柔和的光暈，隨轉動閃爍
+    ctx.save();
+    const glow = 0.38 + 0.18 * Math.sin(t * 6 + p.x * 0.03);
+    const gr = ctx.createRadialGradient(p.x, y, r * 0.4, p.x, y, r * 2);
+    gr.addColorStop(0, `rgba(255,214,64,${glow})`); gr.addColorStop(1, 'rgba(255,214,64,0)');
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(p.x, y, r * 2, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    // 空心的環：外圈深金邊 + 亮金環面，中間挖空
+    const ring = (ox, oy, ix, iy) => {
+      ctx.beginPath();
+      ctx.ellipse(p.x, y, ox, oy, 0, 0, Math.PI * 2);
+      ctx.ellipse(p.x, y, ix, iy, 0, 0, Math.PI * 2);
+    };
+    ctx.fillStyle = '#b87800'; ring(rx + r * 0.07, r * 1.07, rx * 0.5, r * 0.5); ctx.fill('evenodd');
+    const lg = ctx.createLinearGradient(p.x - rx, y - r, p.x + rx, y + r);
+    lg.addColorStop(0, '#fff3a8'); lg.addColorStop(0.45, '#ffc928'); lg.addColorStop(1, '#f2a900');
+    ctx.fillStyle = lg; ring(rx, r, rx * 0.56, r * 0.56); ctx.fill('evenodd');
+    ctx.strokeStyle = 'rgba(184,120,0,0.9)'; ctx.lineWidth = Math.max(1, r * 0.1);
+    ctx.beginPath(); ctx.ellipse(p.x, y, rx * 0.56, r * 0.56, 0, 0, Math.PI * 2); ctx.stroke();
+    if (spin > 0.35) {
+      ctx.strokeStyle = 'rgba(255,253,225,0.9)'; ctx.lineWidth = Math.max(1, r * 0.13); ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.ellipse(p.x, y, rx * 0.8, r * 0.8, 0, Math.PI * 1.1, Math.PI * 1.55); ctx.stroke();
+    }
+    // 閃光：每顆金幣各自有節奏地閃一下十字星
+    const tw = (Math.sin(t * 4.2 + p.x * 0.07) + 1) / 2;
+    if (tw > 0.72) {
+      const k = (tw - 0.72) / 0.28, sr = r * 0.75 * k, sx = p.x + rx * 0.6, sy = y - r * 0.62;
+      ctx.fillStyle = 'rgba(255,255,235,0.95)';
+      ctx.beginPath();
+      ctx.moveTo(sx, sy - sr); ctx.lineTo(sx + sr * 0.2, sy - sr * 0.2); ctx.lineTo(sx + sr, sy); ctx.lineTo(sx + sr * 0.2, sy + sr * 0.2);
+      ctx.lineTo(sx, sy + sr); ctx.lineTo(sx - sr * 0.2, sy + sr * 0.2); ctx.lineTo(sx - sr, sy); ctx.lineTo(sx - sr * 0.2, sy - sr * 0.2);
+      ctx.closePath(); ctx.fill();
     }
   }
 
@@ -2949,31 +2993,45 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   // 原子彈：白光蓋滿畫面，接著蕈狀雲升起
   function drawAtomicBoom(t, cx = W / 2, groundY = horizon + (H - horizon) * 0.35, scale = 1) {
     const k = Math.min(1, t / ATOMIC_BOOM);
-    ctx.save();
     const rise = Math.min(1, t / 1.1);
-    const stemH = H * 0.42 * scale * rise;
-    const capR = W * 0.2 * scale * (0.4 + 0.6 * rise);
-    ctx.fillStyle = 'rgba(255,170,60,0.55)';
+    ctx.save();
+    ctx.fillStyle = 'rgba(214,51,108,0.38)';
     ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = '#c8723a';
-    ctx.beginPath(); ctx.ellipse(cx, groundY, capR * 1.4, capR * 0.3, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#e09a5a';
-    ctx.fillRect(cx - capR * 0.22, groundY - stemH, capR * 0.44, stemH);
-    [[0, 0, 1], [-0.6, 0.15, 0.7], [0.6, 0.15, 0.7], [-0.3, -0.35, 0.65], [0.3, -0.35, 0.65]].forEach(([dx, dy, r], i) => {
-      ctx.fillStyle = i % 2 ? '#f0b46e' : '#e8894a';
-      ctx.beginPath(); ctx.arc(cx + dx * capR, groundY - stemH + dy * capR, r * capR, 0, Math.PI * 2); ctx.fill();
+    const R = Math.min(W, H) * 0.3 * scale * (0.35 + 0.65 * rise);
+    const cy = groundY - H * 0.28 * scale * rise;
+    // 放射狀的怒氣光芒
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = Math.max(2, R * 0.06); ctx.lineCap = 'round';
+    for (let i = 0; i < 14; i++) {
+      const a = i / 14 * Math.PI * 2 + t * 0.6, r0 = R * 1.15, r1 = R * (1.45 + 0.25 * Math.sin(t * 9 + i));
+      ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0); ctx.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1); ctx.stroke();
+    }
+    // 碎掉的愛心
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + R * 0.9);
+    ctx.bezierCurveTo(cx - R * 1.4, cy + R * 0.1, cx - R * 0.9, cy - R * 0.9, cx, cy - R * 0.35);
+    ctx.bezierCurveTo(cx + R * 0.9, cy - R * 0.9, cx + R * 1.4, cy + R * 0.1, cx, cy + R * 0.9);
+    ctx.closePath();
+    ctx.fillStyle = '#d6336c'; ctx.fill();
+    ctx.lineJoin = 'round'; ctx.strokeStyle = '#7a1d45'; ctx.lineWidth = Math.max(2, R * 0.07); ctx.stroke();
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(2, R * 0.07);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - R * 0.35); ctx.lineTo(cx + R * 0.16, cy - R * 0.08); ctx.lineTo(cx - R * 0.14, cy + R * 0.2);
+    ctx.lineTo(cx + R * 0.1, cy + R * 0.5); ctx.lineTo(cx, cy + R * 0.9); ctx.stroke();
+    // 眼淚
+    ctx.fillStyle = 'rgba(120,200,255,0.9)';
+    [[-0.45, 0.05], [0.5, 0.15], [-0.15, 0.35]].forEach(([dx, dy], i) => {
+      const fy = cy + R * dy + ((t * 1.4 + i * 0.3) % 1) * R * 0.5;
+      ctx.beginPath(); ctx.ellipse(cx + dx * R, fy, R * 0.06, R * 0.1, 0, 0, Math.PI * 2); ctx.fill();
     });
-    ctx.fillStyle = 'rgba(255,240,200,0.9)';
-    ctx.beginPath(); ctx.arc(cx, groundY - stemH, capR * 0.35, 0, Math.PI * 2); ctx.fill();
     const flash = Math.max(0, 1 - t / 0.5);
     if (flash > 0) { ctx.fillStyle = `rgba(255,255,255,${flash})`; ctx.fillRect(0, 0, W, H); }
     if (k > 0.3 && scale === 1) {
       const size = Math.max(28, Math.min(44, W * 0.09));
       ctx.globalAlpha = Math.min(1, (k - 0.3) / 0.3);
-      ctx.font = `900 ${size}px -apple-system, "PingFang TC", sans-serif`;
+      ctx.font = `900 ${size}px -apple-system, "PingFang TC", "Noto Sans TC", sans-serif`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
-      ctx.lineWidth = 7; ctx.strokeStyle = '#ffffff'; ctx.strokeText('原子彈！', W / 2, H * 0.72);
-      ctx.fillStyle = '#e8513a'; ctx.fillText('原子彈！', W / 2, H * 0.72);
+      ctx.lineWidth = 7; ctx.strokeStyle = '#ffffff'; ctx.strokeText('情緒勒索炸彈！', W / 2, H * 0.72);
+      ctx.fillStyle = '#d6336c'; ctx.fillText('情緒勒索炸彈！', W / 2, H * 0.72);
     }
     ctx.restore();
   }
@@ -3037,90 +3095,75 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     ctx.fillText(text, p.x, p.y);
   }
 
+  // 白人勳：黑皮衣、黑髮白鬢角、笑容很大的講師型大叔（致敬某位愛穿皮衣的創辦人）
   function drawRoll(B) {
     const R = rollRect(B);
     const t = B.t || 0;
-    const quiz = B.quiz;
-    const curl = 1 - 0.65 * smooth(Math.min(1, B.centerK || 0));
     const dying = B.mode === 'dead' ? 1 - B.dieT / ROLL_DIE : 0;
-    const holes = rollHoles(B);
+    const s = R.h, cx = R.x, cy = R.y;
     ctx.save();
     if (B.introT > 0) ctx.globalAlpha = Math.min(1, (BOSS_INTRO - B.introT) / 1.2);
     else if (B.hitT > 0 && !B.centerK && Math.floor(B.hitT * 20) % 2 === 0) ctx.globalAlpha = 0.6;
+    if (dying) ctx.globalAlpha *= Math.max(0, 1 - dying * 1.1);
     if (!dying && !B.centerK) {
       const p = proj(B.x * laneW, B.d);
       ctx.fillStyle = 'rgba(0,0,0,0.12)';
       ctx.beginPath(); ctx.ellipse(p.x, p.y, R.w * 0.35, R.w * 0.05, 0, 0, Math.PI * 2); ctx.fill();
     }
-    if (dying < 0.75) {
-      ctx.save();
-      if (dying) ctx.globalAlpha *= 1 - dying / 0.75;
-      // 紙背的厚度與陰影
-      ctx.save(); ctx.translate(R.w * 0.012, R.h * 0.03);
-      ctx.beginPath(); rollOutline(R, t, curl); holes.forEach((h) => rollHolePath(R, h, t, curl));
-      ctx.fillStyle = 'rgba(122,61,18,0.45)'; ctx.fill('evenodd');
-      ctx.restore();
-      ctx.beginPath(); rollOutline(R, t, curl); holes.forEach((h) => rollHolePath(R, h, t, curl));
-      const grad = ctx.createLinearGradient(R.x - R.w / 2, 0, R.x + R.w / 2, 0);
-      grad.addColorStop(0, '#e2a532'); grad.addColorStop(0.42, '#fbe08a'); grad.addColorStop(0.58, '#fff0b0'); grad.addColorStop(1, '#dc9c2c');
-      ctx.fillStyle = grad; ctx.fill('evenodd');
-      ctx.save();
-      ctx.clip('evenodd');
-      if (dying) { ctx.fillStyle = `rgba(40,36,34,${Math.min(1, dying * 2.2)})`; ctx.fillRect(R.x - R.w, R.y - R.h, R.w * 2, R.h * 2); }
-      // 焦糖色的烤邊（往內漸淡）與破洞的焦痕
-      ctx.lineJoin = 'round';
-      ctx.beginPath(); rollOutline(R, t, curl);
-      ctx.strokeStyle = 'rgba(184,105,42,0.45)'; ctx.lineWidth = R.w * 0.07; ctx.stroke();
-      holes.forEach((h) => {
-        ctx.beginPath(); rollHolePath(R, h, t, curl);
-        ctx.strokeStyle = 'rgba(150,80,20,0.5)'; ctx.lineWidth = R.w * 0.04; ctx.stroke();
-        ctx.strokeStyle = '#6b3410'; ctx.lineWidth = Math.max(1.5, R.w * 0.012); ctx.stroke();
-      });
-      if (!dying) {
-        if (quiz) {
-          // 上面一行先寫「解方程式」，答完換成對錯
-          const fs = Math.min(R.h * 0.13, R.w * 0.085);
-          const ok = quiz.result === 'ok';
-          const head = !quiz.result ? '解方程式' : ok ? `答對！−${ROLL_QUIZ_DMG}` : `${quiz.result === 'timeout' ? '時間到' : '答錯'}！x = ${quiz.answer < 0 ? '−' + -quiz.answer : quiz.answer}`;
-          rollText(R, head, 0.5, quiz.band - 0.075, t, curl, fs * (quiz.result ? 0.7 : 0.55), !quiz.result ? '#8b5a2b' : ok ? '#2c9a5a' : '#e8513a');
-          ctx.font = `900 ${Math.round(fs)}px -apple-system, "PingFang TC", sans-serif`;
-          const fit = Math.min(1, R.w * 0.78 / Math.max(1, ctx.measureText(quiz.text).width));
-          rollText(R, quiz.text, 0.5, quiz.band + 0.035, t, curl, fs * fit, '#1d1d1f');
-        } else {
-          const fs = R.h * 0.075;
-          rollText(R, '數學作業', 0.5, 0.12, t, curl, fs * 1.15, '#8b5a2b');
-          ['1.  3x + 5 = 20', '2.  7 − 2x = 1', '3.  4x = x + 9'].forEach((line, i) => rollText(R, line, 0.14, ROLL_BANDS[[1, 0, 2][i]], t, curl, fs, '#4a4a4f', 'left'));
-          rollText(R, '0', 0.84, 0.16, t, curl, fs * 1.6, '#e8513a');
-        }
-      }
-      ctx.restore();
-      ctx.beginPath(); rollOutline(R, t, curl);
-      ctx.strokeStyle = dying ? '#3a3330' : '#b8692a'; ctx.lineWidth = Math.max(1.5, R.w * 0.018); ctx.stroke();
-      ctx.restore();
-    }
-    // 燒起來：下緣與破洞冒火
-    if (!dying && (B.mode === 'lava' || (B.mode === 'quiz' && !quiz?.result))) {
-      const fs = R.w * 0.05;
-      for (let i = 0; i < 7; i++) {
-        const u = 0.08 + i * 0.14, p = rollPt(R, u, 0.97, t, curl);
-        drawFlame(p.x, p.y, fs * (0.8 + 0.4 * hash01(i)), t * 14 + i * 1.7);
-      }
-      [0.03, 0.97].forEach((u, i) => { const p = rollPt(R, u, 0.5, t, curl); drawFlame(p.x, p.y, fs * 0.8, t * 12 + i * 3); });
-      holes.forEach((h, i) => { const p = rollPt(R, h.u, h.v + h.r / ROLL_ASPECT, t, curl); drawFlame(p.x, p.y, fs * 0.6, t * 13 + i * 2.3); });
-    }
-    // 化成灰燼：灰黑碎屑往上飄、再慢慢落下
+    const OL = '#2b1d2e', OW = Math.max(1.4, s * 0.03);
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.lineWidth = OW; ctx.strokeStyle = OL;
+    const throwing = B.mode === 'gpu' && !dying;
+    // 手：丟的時候右手舉著一張顯示卡
+    const arm = (side, up) => {
+      ctx.lineWidth = s * 0.17; ctx.strokeStyle = OL;
+      const path = () => { ctx.beginPath(); ctx.moveTo(cx + side * s * 0.5, cy + s * 0.2); ctx.lineTo(cx + side * s * (up ? 0.72 : 0.66), cy + s * (up ? -0.1 : 0.45)); ctx.stroke(); };
+      path(); ctx.strokeStyle = '#16161a'; ctx.lineWidth = s * 0.13; path();
+    };
+    arm(-1, false); arm(1, throwing);
+    if (throwing) drawGpu(cx + s * 0.78, cy - s * 0.22 + Math.sin(t * 6) * s * 0.02, s * 0.2, -0.35 + Math.sin(t * 6) * 0.1);
+    // 皮衣
+    ctx.fillStyle = '#16161a';
+    rrect(cx - s * 0.62, cy + s * 0.02, s * 1.24, s * 0.56, s * 0.18); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#e9e9ee'; ctx.beginPath(); ctx.moveTo(cx - s * 0.17, cy + s * 0.03); ctx.lineTo(cx, cy + s * 0.4); ctx.lineTo(cx + s * 0.17, cy + s * 0.03); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#3d3d46'; ctx.lineWidth = Math.max(1, s * 0.02);
+    ctx.beginPath(); ctx.moveTo(cx - s * 0.2, cy + s * 0.03); ctx.lineTo(cx - s * 0.06, cy + s * 0.46); ctx.moveTo(cx + s * 0.2, cy + s * 0.03); ctx.lineTo(cx + s * 0.06, cy + s * 0.46); ctx.stroke();
+    // 名牌
+    ctx.fillStyle = '#ffffff'; rrect(cx + s * 0.2, cy + s * 0.22, s * 0.34, s * 0.14, s * 0.03); ctx.fill();
+    ctx.fillStyle = '#76b900'; ctx.fillRect(cx + s * 0.2, cy + s * 0.22, s * 0.04, s * 0.14);
+    ctx.fillStyle = '#1d1d1f'; ctx.font = `800 ${Math.max(7, s * 0.085)}px -apple-system, "PingFang TC", sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('白人勳', cx + s * 0.39, cy + s * 0.295);
+    // 脖子與頭
+    ctx.lineWidth = OW; ctx.strokeStyle = OL;
+    const skin = '#f0c8a2', hr = s * 0.28, hy = cy - s * 0.2;
+    ctx.fillStyle = skin; ctx.fillRect(cx - s * 0.1, hy + hr * 0.7, s * 0.2, s * 0.2);
+    ctx.beginPath(); ctx.ellipse(cx, hy, hr * 1.02, hr * 1.06, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    // 黑髮往後梳、兩側花白
+    ctx.fillStyle = '#1b1a1c';
+    ctx.beginPath(); ctx.ellipse(cx, hy - hr * 0.42, hr * 1.06, hr * 0.7, 0, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#9a9aa2';
+    [-1, 1].forEach((sd) => { ctx.beginPath(); ctx.ellipse(cx + sd * hr * 0.98, hy - hr * 0.12, hr * 0.12, hr * 0.28, 0, 0, Math.PI * 2); ctx.fill(); });
+    // 眉眼、笑容、腮紅
+    ctx.strokeStyle = OL; ctx.lineWidth = Math.max(1.4, s * 0.035);
+    [-1, 1].forEach((sd) => {
+      ctx.beginPath(); ctx.moveTo(cx + sd * hr * 0.62, hy - hr * 0.3); ctx.lineTo(cx + sd * hr * 0.2, hy - hr * 0.26); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx + sd * hr * 0.42, hy - hr * 0.02, hr * 0.14, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke();
+    });
+    ctx.fillStyle = 'rgba(240,120,140,0.4)';
+    ctx.beginPath(); ctx.ellipse(cx - hr * 0.62, hy + hr * 0.3, hr * 0.17, hr * 0.1, 0, 0, Math.PI * 2); ctx.ellipse(cx + hr * 0.62, hy + hr * 0.3, hr * 0.17, hr * 0.1, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.strokeStyle = OL;
+    ctx.beginPath(); ctx.moveTo(cx - hr * 0.48, hy + hr * 0.42); ctx.quadraticCurveTo(cx, hy + hr * 0.98, cx + hr * 0.48, hy + hr * 0.42); ctx.quadraticCurveTo(cx, hy + hr * 0.5, cx - hr * 0.48, hy + hr * 0.42); ctx.closePath(); ctx.fill(); ctx.stroke();
+    // 三題全對：金光碎片往上飄
     if (dying && B.ashes) {
       const k = dying * ROLL_DIE;
       for (const a of B.ashes) {
         const x = R.x + (a.u - 0.5 + a.vx * k) * R.w;
         const y = R.y + (a.v - 0.5 + a.vy * k + 0.12 * k * k) * R.h;
-        const r = a.r * R.w * (1 - dying * 0.4);
+        const r = a.r * R.w;
         ctx.save();
-        ctx.globalAlpha = Math.max(0, 1 - dying) * (0.6 + 0.4 * a.gray);
+        ctx.globalAlpha = Math.max(0, 1 - dying);
         ctx.translate(x, y); ctx.rotate(a.rot + a.vr * k);
-        ctx.fillStyle = a.gray > 0.7 ? '#9a8f88' : a.gray > 0.3 ? '#4d4541' : '#1f1b19';
-        ctx.fillRect(-r, -r * 0.6, r * 2, r * 1.2);
-        if (dying < 0.4 && a.gray > 0.85) { ctx.fillStyle = '#ff8a1e'; ctx.fillRect(-r * 0.4, -r * 0.3, r * 0.8, r * 0.6); }
+        ctx.fillStyle = a.gray > 0.5 ? '#76b900' : '#ffd23f';
+        ctx.fillRect(-r, -r, r * 2, r * 2);
         ctx.restore();
       }
     }
@@ -3183,34 +3226,42 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   }
 
   // 天上砸下來的火球：從畫面頂端直直落到角色那一排的跑道上
+  // 顯示卡：黑色卡身、綠色飾條、兩顆風扇
+  function drawGpu(x, y, r, rot = 0) {
+    ctx.save();
+    ctx.translate(x, y); ctx.rotate(rot);
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#2b1d2e'; ctx.lineWidth = Math.max(1.2, r * 0.1);
+    ctx.fillStyle = '#1f1f24'; rrect(-r * 1.25, -r * 0.62, r * 2.5, r * 1.24, r * 0.14); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#76b900'; ctx.fillRect(-r * 1.25, -r * 0.62, r * 2.5, r * 0.16);
+    [-0.58, 0.58].forEach((fx, i) => {
+      ctx.fillStyle = '#3a3a42'; ctx.beginPath(); ctx.arc(fx * r, r * 0.06, r * 0.46, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = '#9aa3b5'; ctx.lineWidth = Math.max(1, r * 0.07);
+      for (let k = 0; k < 4; k++) {
+        const a = k * Math.PI / 2 + rot * 3 + i;
+        ctx.beginPath(); ctx.moveTo(fx * r, r * 0.06); ctx.lineTo(fx * r + Math.cos(a) * r * 0.4, r * 0.06 + Math.sin(a) * r * 0.4); ctx.stroke();
+      }
+      ctx.strokeStyle = '#2b1d2e'; ctx.lineWidth = Math.max(1.2, r * 0.1);
+    });
+    ctx.fillStyle = '#d2d2d7'; ctx.fillRect(-r * 1.25, r * 0.48, r * 0.5, r * 0.14);
+    ctx.restore();
+  }
+
+  // 白人勳丟出來的顯示卡：從他手上飛向玩家那條跑道，落點先亮紅圈預告
   function drawFires(g, B) {
+    const R = B.d != null ? rollRect(B) : null;
     for (const f of B.fires) {
       const k = Math.min(1, f.t / FIRE_FALL), e = k * k;
       const p = proj((f.lane - 1) * laneW, PLAYER_D);
-      const r = p.s * laneW * 0.2;
-      const y0 = -r * 2, y = y0 + (p.y - r - y0) * e;
+      const r = p.s * laneW * 0.24;
+      const sx = R ? R.x : p.x, sy = R ? R.y : -r * 2;
+      const x = sx + (p.x - sx) * k, y = sy + (p.y - r - sy) * e, rr = r * (0.45 + 0.55 * k);
       ctx.save();
-      // 冒煙的尾巴
-      const trail = ctx.createLinearGradient(0, y - r * 6, 0, y);
-      trail.addColorStop(0, 'rgba(90,84,80,0)'); trail.addColorStop(1, 'rgba(90,84,80,0.55)');
-      ctx.fillStyle = trail;
-      ctx.beginPath(); ctx.moveTo(p.x - r * 0.7, y); ctx.lineTo(p.x, y - r * 6); ctx.lineTo(p.x + r * 0.7, y); ctx.closePath(); ctx.fill();
-      ctx.translate(p.x, y); ctx.rotate(Math.sin(f.t * 14 + f.spin) * 0.25);
-      ctx.strokeStyle = '#2b1d2e'; ctx.lineWidth = Math.max(1.2, r * 0.12);
-      // 鍋柄
-      ctx.fillStyle = '#8a5a3a'; rrect(r * 0.8, -r * 0.18, r * 1.3, r * 0.36, r * 0.12); ctx.fill(); ctx.stroke();
-      // 鍋身
-      ctx.fillStyle = '#3a3a40'; ctx.beginPath(); ctx.ellipse(0, 0, r * 1.05, r * 0.95, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#1d1d1f'; ctx.beginPath(); ctx.ellipse(0, 0, r * 0.82, r * 0.74, 0, 0, Math.PI * 2); ctx.fill();
-      // 煎糊的蛋
-      ctx.fillStyle = '#5a3a1a'; ctx.beginPath(); ctx.ellipse(-r * 0.05, r * 0.02, r * 0.5, r * 0.42, 0.3, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#c98a2a'; ctx.beginPath(); ctx.arc(-r * 0.05, r * 0.02, r * 0.17, 0, Math.PI * 2); ctx.fill();
-      // 冒黑煙
-      for (let i = 0; i < 3; i++) {
-        const ph = (f.t * 2.2 + i / 3) % 1;
-        ctx.fillStyle = `rgba(60,56,54,${0.5 * (1 - ph)})`;
-        ctx.beginPath(); ctx.arc(Math.sin(ph * 6 + i * 2) * r * 0.4, -r * (1.1 + ph * 1.3), r * (0.22 + ph * 0.25), 0, Math.PI * 2); ctx.fill();
-      }
+      ctx.fillStyle = `rgba(232,81,58,${0.18 + 0.3 * k})`;
+      ctx.beginPath(); ctx.ellipse(p.x, p.y, r * 1.3, r * 0.4, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(118,185,0,0.35)'; ctx.lineWidth = Math.max(2, rr * 0.5); ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(sx + (x - sx) * 0.35, sy + (y - sy) * 0.35); ctx.lineTo(x, y); ctx.stroke();
+      drawGpu(x, y, rr, Math.sin(f.t * 12 + f.spin) * 0.45);
       ctx.restore();
     }
   }
@@ -3817,7 +3868,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   });
   const artIcon = (k, x, y, size) => { const im = ICON_IMG[k]; if (im && im.complete && im.naturalWidth) ctx.drawImage(im, x, y, size, size); };
   const BALL_SVG = '<svg class="heart-ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ffffff" stroke="#2b2118" stroke-width="1.6"/><path d="M12 7.6l4.2 3-1.6 4.9H9.4L7.8 10.6z" fill="#2b2118"/><path d="M12 7.6V2.4M16.2 10.6l4.9-1.6M14.6 15.5l3 4.2M9.4 15.5l-3 4.2M7.8 10.6 2.9 9" stroke="#2b2118" stroke-width="1.4"/></svg>';
-  const COIN_SVG = '<svg class="coin-ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#d99a00"/><circle cx="12" cy="12" r="8" fill="#f2b705"/><path d="M12 7v10" stroke="#fff3c4" stroke-width="2.4" stroke-linecap="round"/></svg>';
+  const COIN_SVG = '<svg class="coin-ico" viewBox="0 0 24 24"><path fill="#b87800" fill-rule="evenodd" d="M12 1.2a10.8 10.8 0 1 0 0 21.6 10.8 10.8 0 0 0 0-21.6zM12 8.6a3.4 3.4 0 1 1 0 6.8 3.4 3.4 0 0 1 0-6.8z"/><path fill="#ffd23f" fill-rule="evenodd" d="M12 2.6a9.4 9.4 0 1 0 0 18.8 9.4 9.4 0 0 0 0-18.8zM12 7.8a4.2 4.2 0 1 1 0 8.4 4.2 4.2 0 0 1 0-8.4z"/><path d="M5.4 8.8A8 8 0 0 1 12 4.2" stroke="#fffbe0" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M19.6 3.4l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z" fill="#fff6bf"/></svg>';
 
   function renderWallet() {
     $('wallet').textContent = wallet;
@@ -3901,12 +3952,12 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     document.querySelectorAll('#shop-list .item').forEach((b) => {
       if (b.dataset.id === HEART_ID) {
         b.classList.toggle('sel', shopSel === HEART_ID);
-        b.querySelector('.pr').innerHTML = extraHearts ? `已買 ${extraHearts} 顆` : COIN_SVG + HEART_PRICE;
+        b.querySelector('.pr').innerHTML = maxHp() >= HP_CAP ? `開局 ${maxHp()} 顆（滿）` : extraHearts ? `開局 ${maxHp()} 顆` : COIN_SVG + HEART_PRICE;
         return;
       }
       if (b.dataset.id === BEAR_ID) {
         b.classList.toggle('sel', shopSel === BEAR_ID);
-        b.querySelector('.pr').textContent = kickBonus() ? `踢倒 ${bearRate()}% · +${kickBonus()} 金幣` : `踢倒 ${bearRate()}%`;
+        b.querySelector('.pr').textContent = `彈開 +${kickBonus()} 金幣`;
         return;
       }
       if (b.dataset.id === BEAR_TIME_ID) {
@@ -3952,8 +4003,10 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
       deal.disabled = wallet < dealPrice(base);
     }
     if (shopSel === HEART_ID) {
-      const ok = wallet >= HEART_PRICE;
-      if (ok) act.innerHTML = `購買 ${COIN_SVG}${HEART_PRICE}`; else act.textContent = `還差 ${HEART_PRICE - wallet} 枚金幣`;
+      const full = maxHp() >= HP_CAP;
+      const ok = !full && wallet >= HEART_PRICE;
+      if (full) act.textContent = `已達上限 ${HP_CAP} 顆`;
+      else if (ok) act.innerHTML = `購買 ${COIN_SVG}${HEART_PRICE}`; else act.textContent = `還差 ${HEART_PRICE - wallet} 枚金幣`;
       act.disabled = !ok;
       renderWallet();
       return;
@@ -3961,7 +4014,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     if (shopSel === BEAR_ID) {
       const ok = wallet >= BEAR_PRICE;
       // 已經 100% 以上：再買是加踢倒獎金
-      const more = bearRate() >= 100 ? `每踢倒多拿 +${KICK_BONUS} 金幣` : '踢倒率 +1%';
+      const more = `彈開 +${KICK_BONUS} 金幣`;
       if (ok) act.innerHTML = `${more} ${COIN_SVG}${BEAR_PRICE}`;
       else act.textContent = `還差 ${BEAR_PRICE - wallet} 枚金幣`;
       act.disabled = !ok;
@@ -4013,8 +4066,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     if (n < 1 || wallet < n * stack.price) return;
     wallet -= n * stack.price;
     stack.add(n);
-    beep(1320, 0.12, 'square', 0.06, 1760);
-    setTimeout(() => beep(1760, 0.18, 'square', 0.06, 2200), 110);
+    cashSfx();
     saveWardrobe();
     refreshShop();
   }
@@ -4026,8 +4078,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     deals--;
     if (STACKABLE[shopSel]) STACKABLE[shopSel].add(1);
     else { owned.add(shopSel); outfitId = shopSel; }
-    beep(1320, 0.12, 'square', 0.06, 1760);
-    setTimeout(() => beep(1760, 0.18, 'square', 0.06, 2200), 110);
+    cashSfx();
     saveWardrobe();
     refreshShop();
   }
@@ -4038,8 +4089,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     wallet -= n * dealPrice(stack.price);
     deals -= n;
     stack.add(n);
-    beep(1320, 0.12, 'square', 0.06, 1760);
-    setTimeout(() => beep(1760, 0.18, 'square', 0.06, 2200), 110);
+    cashSfx();
     saveWardrobe();
     refreshShop();
   }
@@ -4055,8 +4105,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
       if (wallet < O.price) return;
       wallet -= O.price;
       owned.add(O.id);
-      beep(1320, 0.12, 'square', 0.06, 1760);
-      setTimeout(() => beep(1760, 0.18, 'square', 0.06, 2200), 110);
+      cashSfx();
     }
     outfitId = O.id;
     saveWardrobe();
@@ -4098,7 +4147,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     const drawPlayer = () => {
       if (!g) { drawRunner(W / 2, pp.y, ps, 0, { still: true }); return; }
       g.ghosts.forEach((gh) => {
-        drawRunner(W / 2 + focal * gh.x * laneW / PLAYER_D, pp.y, ps, t, { ghost: true, alpha: gh.life / 0.25 * 0.7 });
+        drawRunner(W / 2 + focal * gh.x * laneW / PLAYER_D, pp.y, ps, t, { ghost: true, alpha: Math.min(0.7, gh.life / 0.25 * 0.7) });
       });
       const px = playerLaneX();
       const dodging = g.dodgeT < DODGE_TIME;
@@ -4113,7 +4162,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
       const sx = W / 2 + focal * px * laneW / PLAYER_D;
       if (g.dying) { drawPoisonDeath(W / 2 + focal * g.dying.x * laneW / PLAYER_D, pp.y, ps, g.dying.t); return; }
       const frozen = state !== 'play' || g.stunT > 0 || rollQuizOn(g);
-      if (!blink) drawRunner(sx, pp.y, ps, t, { lean, swing, kick, still: frozen, alpha: g.graceT > 0 ? 0.5 : null, tint: g.tint });
+      if (!blink) drawRunner(sx, pp.y, ps, t, { lean, swing, kick, still: frozen, alpha: g.bearT > 0 ? 0.55 : g.graceT > 0 ? 0.5 : null, tint: g.tint });
       if (g.burnT > 0) drawPlayerBurn(sx, pp.y, ps, g.burnT / BURN_TIME, g.t + g.burnT);
       if (g.shieldT > 0) drawDome(sx, pp.y, ps, g.shieldT);
     };
@@ -4165,7 +4214,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
       ctx.globalAlpha = 1;
       const bx = W / 2 + focal * playerLaneX() * laneW / PLAYER_D;
       if (g.stunT > 0) drawBubble(bx, pp.y - ps * 1.5, 1, 1, `被叨念中… ${Math.ceil(g.stunT)}`);
-      else if (g.bearT > 0) drawBubble(bx, pp.y - ps * 1.5, 1, Math.min(1, (g.bearMax - g.bearT) / 0.3 + 0.01), '狗熊哆嗦毛！');
+      else if (g.bearT > 0) drawBubble(bx, pp.y - ps * 1.5, 1, Math.min(1, (g.bearMax - g.bearT) / 0.3 + 0.01), '閃身步plus！');
       else if (g.kickT > 0) drawBubble(bx, pp.y - ps * 1.5, 1, g.kickT / KICK_TIME, '浪子踢球！');
       else if (g.bubbleT > 0) drawBubble(bx, pp.y - ps * 1.4, g.bubbleSide, g.bubbleT / BUBBLE_TIME);
       if (g.boostT > 0) {
@@ -4230,23 +4279,29 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   }
   function rollTip(g, B) {
     if (B.hp <= 0 || B.introT > 0) return '';
-    if (B.mode === 'wait') return `${Math.ceil(B.modeT)} 秒後燒起來！`;
-    if (B.mode === 'rest') return `玩具收起來了，${Math.ceil(B.modeT)} 秒後再灑`;
-    if (B.mode === 'quiz') return `解方程式！扣血量 ${B.dmg}`;
-    if (g.dist + PLAYER_D < B.lava.start) return '玩具滿地！只能走乾淨的地板';
-    return `踩在路上 ${Math.floor(B.streak)}/${ROLL_STREAK} 秒・扣血量 ${B.dmg}/秒`;
+    if (B.mode === 'wait') return '他要丟顯示卡了！';
+    if (B.mode === 'quiz') return `第 ${B.q + 1} 題：選一個答案`;
+    return `連續閃避 ${Math.floor(B.streak)}/${ROLL_STREAK} 秒・第 ${B.q + 1}/${ROLL_QS.length} 題`;
   }
   function renderQuiz() {
     const g = game, on = state === 'play' && rollQuizOn(g);
     if ($('quiz').hidden === on) {
       $('quiz').hidden = !on;
       $('keys').hidden = on; $('ult').hidden = on;
+      $('quiz').dataset.k = '';
     }
     if (!on) return;
-    const Q = g.boss.quiz;
-    const ans = `x = ${Q.input || '?'}`, sec = String(Math.ceil(Q.t));
-    if ($('quiz-ans').textContent !== ans) $('quiz-ans').textContent = ans;
-    if ($('quiz-time').textContent !== sec) $('quiz-time').textContent = sec;
+    const Q = g.boss.quiz, def = ROLL_QS[Q.idx];
+    const key = `${Q.idx}|${Q.result}|${Q.picked}`;
+    if ($('quiz').dataset.k !== key) {
+      $('quiz').dataset.k = key;
+      $('quiz-ans').textContent = `第 ${Q.idx + 1} / ${ROLL_QS.length} 題`;
+      $('quiz-q').textContent = def.q;
+      $('quiz-opts').innerHTML = def.o.map((t, i) => `<button data-i="${i}" class="${Q.result && Q.picked === i ? (Q.result === 'ok' ? 'ok' : 'bad') : ''}"><b>${'ABC'[i]}</b>${t}</button>`).join('');
+      $('quiz-msg').textContent = Q.result === 'ok' ? '答對了！' : Q.result === 'wrong' ? `答錯了！再連續閃躲 ${ROLL_STREAK} 秒，重問這一題` : '點選答案（電腦按 1／2／3）';
+    }
+    const R = rollRect(g.boss);
+    $('quiz').style.top = Math.round(R.y + R.h / 2 + 12) + 'px';
     $('quiz').classList.toggle('done', !!Q.result);
   }
   function renderBoss() {
@@ -4267,7 +4322,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
       shownBoss = key;
       $('boss').hidden = false;
       $('boss-name').textContent = BOSS_NAMES.roll;
-      $('boss-hp').innerHTML = `<b class="bar"><i style="width:${(B.hp / ROLL_HP * 100).toFixed(1)}%"></i></b><span class="num">${B.hp}</span>`;
+      $('boss-hp').innerHTML = `<b class="bar"><i style="width:${(B.hp / ROLL_HP * 100).toFixed(1)}%"></i></b><span class="num">${ROLL_QS.length - B.hp}/${ROLL_QS.length}</span>`;
       $('boss-tip').textContent = tip;
       return;
     }
@@ -4390,13 +4445,13 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     $('r-earn').textContent = game.coins;
     $('r-wallet').textContent = wallet;
     $('r-deal').textContent = newDeals ? `拿到一折券 ${newDeals * DEAL_GRANT} 張！` : `再跑 ${DEAL_DIST - Math.floor(dealDist)} m 拿一折券`;
-    $('over-title').textContent = (game.boom ? '被原子彈炸到了' : game.dying ? '氣到昏倒' : '遊戲結束') + (mode === 'master' ? '・大師模式' : '');
+    $('over-title').textContent = (game.boom ? '被情緒勒索炸彈炸到了' : game.won ? '破關！' : game.dying ? '氣到昏倒' : '遊戲結束') + (mode === 'master' ? '・大師模式' : '');
     $('r-poison-wrap').hidden = !game.poison;
     $('r-poison').textContent = game.poison;
     $('best-over').textContent = s > best ? '新紀錄！' : `最佳紀錄 ${best}`;
     $('keys').hidden = true; $('ult').hidden = true; $('provoke').hidden = true; $('quiz').hidden = true;
     const reviveLeft = REVIVE_MAX - (game.revives || 0);
-    $('revive').hidden = reviveLeft <= 0; $('revive').disabled = false;
+    $('revive').hidden = reviveLeft <= 0 || !!game.won; $('revive').disabled = false;
     $('revive').textContent = `📺 看廣告復活（剩 ${reviveLeft} 次）`;
     $('revive-msg').textContent = reviveLeft > 0 ? '開新分頁看廣告，看完回到這裡就會復活' : '';
     adOpenedAt = 0;
@@ -4516,13 +4571,11 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     if (!$('help').hidden && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
       e.preventDefault(); flipHelp(e.key === 'ArrowLeft' ? -1 : 1); return;
     }
-    // 作業烤卷出題時：數字、負號、退格、Enter 用來作答，其他鍵（Esc／P 暫停除外）不動作
+    // 白人勳出題時：1／2／3（或 A／B／C）選答案，其他鍵（Esc／P 暫停除外）不動作
     if (state === 'play' && rollQuizOn(game) && !['Escape', 'p', 'P'].includes(e.key)) {
       e.preventDefault();
-      if (/^[0-9]$/.test(e.key)) quizKey(e.key);
-      else if (e.key === '-' || e.key === '−') quizKey('−');
-      else if (e.key === 'Backspace') quizKey('⌫');
-      else if (e.key === 'Enter' && !e.repeat) quizSubmit();
+      const pick = '123'.indexOf(e.key) >= 0 ? '123'.indexOf(e.key) : 'abc'.indexOf(e.key.toLowerCase());
+      if (e.key.length === 1 && pick >= 0 && !e.repeat) quizPick(pick);
       return;
     }
     if (e.repeat) return;
@@ -4550,7 +4603,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     e.preventDefault(); e.stopPropagation();
     const b = e.target.closest('button');
     if (!b) return;
-    if (b.id === 'quiz-ok') quizSubmit(); else quizKey(b.dataset.k);
+    quizPick(Number(b.dataset.i));
   });
 
   let swipe = null;
@@ -4686,8 +4739,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
   }
 
   function artRoll(extra = {}) {
-    const { holes, keep } = makeHoles();
-    return { kind: 'roll', x: 0, d: 4.2, size: 4.6, t: 0.4, introT: 0, hitT: 0, mode: 'wait', hp: ROLL_HP, holes, keep, centerK: 0, quiz: null, ...extra };
+    return { kind: 'roll', x: 0, d: 4.2, size: 4.6, t: 0.4, introT: 0, hitT: 0, mode: 'wait', hp: ROLL_HP, q: 0, fires: [], burns: [], centerK: 0, quiz: null, ...extra };
   }
   // 說明書插圖用的固定岩漿路：先往左彎再往右彎
   const artLava = () => ({ start: 1.2, nodes: [{ pos: 1.2, lane: 1, win: 0 }, { pos: 3.4, lane: 0, win: 0.8 }, { pos: 6.5, lane: 1, win: 1.2 }, { pos: 12, lane: 2, win: 2 }] });
@@ -4778,7 +4830,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
     bear() {
       artBear((me) => {
         drawFlying({ kind: 'barrier', x: 0.9, d: 2.1, h: 1.1, rot: -0.6, life: 1 });
-        artLabel('狗熊哆嗦毛！', W / 2, 12);
+        artLabel('閃身步plus！', W / 2, 12);
       });
     },
     bearAfter() {
@@ -4792,7 +4844,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
       drawRoad(0);
       artBoss(0, 3.6);
       artRunner(0);
-      artLabel('1000 m', 26, 13);
+      artLabel('600 m', 26, 13);
     },
     bossBook() {
       drawRoad(0);
@@ -4847,7 +4899,7 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
       drawRoad(0);
       drawOppenheimer({ x: 0, d: 3.6, size: 5.6, t: 0.3, phase: 1, hitT: 0, dieT: 0, aimT: 0 });
       artRunner(0);
-      artLabel('5000 m', 26, 13, '#2c9a5a');
+      artLabel('1800 m', 26, 13, '#2c9a5a');
     },
     oppNuke() {
       drawRoad(0);
@@ -4884,78 +4936,49 @@ body.night #hud .coin-ico { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
       drawRoad(0);
       drawRoll(artRoll());
       artRunner(0);
-      artLabel('8000 m', 26, 13, '#b8692a');
-    },
-    rollBurn() {
-      drawRoad(0);
-      const B = artRoll({ mode: 'lava' });
-      drawRoll(B);
-      const g = { dist: 0, t: 0.3, boss: B };
-      B.burns = [{ lane: 0, d: 2.6, t: 0.2 }, { lane: 2, d: 3.4, t: 0.1 }];
-      drawRollGround(g, B);
-      artRunner(0);
+      artLabel('3000 m', 26, 13, '#2c9a5a');
     },
     rollFire() {
       drawRoad(0);
+      const B = artRoll({ mode: 'gpu', fires: [{ lane: 0, t: FIRE_FALL * 0.75, spin: 1 }, { lane: 2, t: FIRE_FALL * 0.55, spin: 3 }] });
+      drawRoll(B);
       artRunner(0);
-      drawFires({}, { fires: [{ lane: 0, t: FIRE_FALL * 0.75, spin: 1 }, { lane: 2, t: FIRE_FALL * 0.55, spin: 3 }] });
+      drawFires({}, B);
     },
-    rollLava() {
+    rollStreak() {
       drawRoad(0);
-      drawLava({ dist: 0, t: 0.3 }, artLava());
-      artRunner(0);
-    },
-    rollHurt() {
-      drawRoad(0);
-      drawLava({ dist: 0, t: 0.3 }, artLava());
-      const me = artRunner(-1, { still: true });
-      drawPlayerBurn(me.x, me.y, me.s, 1, 0.4);
-      ctx.fillStyle = 'rgba(232,81,58,0.18)'; ctx.fillRect(0, 0, W, H);
-      artHeart(W - 30, 15, 9, '#e8513a');
-      artText('−1', W - 12, 15, '#e8513a', 13);
+      [-0.6, 0.6].forEach((dx) => artRunner(dx, { ghost: true, alpha: 0.35 }));
+      artRunner(0, { lean: 0.3, swing: 1 });
+      artLabel('連續閃 6 秒', W / 2, 12, '#2c9a5a');
     },
     rollQuiz() {
       artPlain();
-      const B = artRoll({ mode: 'quiz', centerK: 1, rect: { x: W / 2, y: H / 2 - 6, w: 100, h: 100 * ROLL_ASPECT } });
-      B.quiz = { text: '3x + 4 = 19', answer: 5, band: 0.5, result: null };
-      drawRoll(B);
-      artLabel('連續 10 秒', W / 2, H - 10, '#2c9a5a');
-    },
-    rollKeys() {
-      artPlain();
+      drawRoll(artRoll({ mode: 'quiz', centerK: 1, rect: { x: W / 2, y: 24, w: 52, h: 38 } }));
       ctx.save();
-      ctx.fillStyle = '#ffffff'; rrect(18, 6, 84, 80, 10); ctx.fill();
-      ctx.font = `800 12px ${FONT}`; ctx.fillStyle = '#1d1d1f'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.fillText('x = 5', 26, 17);
-      ctx.fillStyle = '#e8513a'; rrect(80, 10, 16, 14, 7); ctx.fill();
-      ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.font = `800 9px ${FONT}`; ctx.fillText('7', 88, 17.5);
-      ['1', '2', '3', '4', '5', '6'].forEach((k, i) => {
-        const x = 24 + (i % 3) * 25, y = 28 + Math.floor(i / 3) * 18;
-        ctx.fillStyle = '#f0f0f3'; rrect(x, y, 22, 15, 4); ctx.fill();
-        ctx.fillStyle = '#1d1d1f'; ctx.font = `800 10px ${FONT}`; ctx.fillText(k, x + 11, y + 8);
+      ctx.fillStyle = '#ffffff'; rrect(14, 46, 92, 40, 8); ctx.fill();
+      ctx.font = `800 7px ${FONT}`; ctx.fillStyle = '#1d1d1f'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillText('NVIDIA 最貴的遊戲顯卡？', 18, 52);
+      ['RTX PRO 6000', 'H100', 'RTX 5090'].forEach((t, i) => {
+        ctx.fillStyle = i === 2 ? '#2c9a5a' : '#f0f0f3'; rrect(18, 57 + i * 9.5, 84, 8, 3); ctx.fill();
+        ctx.fillStyle = i === 2 ? '#ffffff' : '#1d1d1f'; ctx.fillText(`${'ABC'[i]}  ${t}`, 21, 61.2 + i * 9.5);
       });
-      ctx.fillStyle = '#e8513a'; rrect(24, 66, 72, 15, 5); ctx.fill();
-      ctx.fillStyle = '#ffffff'; ctx.fillText('確定', 60, 74);
       ctx.restore();
     },
-    rollDmg() {
+    rollRetry() {
       drawRoad(0);
-      drawLava({ dist: 0, t: 0.3 }, artLava());
-      drawRoll(artRoll({ mode: 'lava', hp: 3200 }));
-      artText('−10／秒', W / 2, H - 12, '#e8513a', 13);
-    },
-    rollRest() {
-      drawRoad(0);
-      drawRoll(artRoll({ mode: 'rest', hp: 1200 }));
-      artRunner(0);
-      artLabel('5 秒', 22, 13, '#2c9a5a');
+      const B = artRoll({ mode: 'gpu', fires: [{ lane: 2, t: FIRE_FALL * 0.6, spin: 2 }] });
+      drawRoll(B);
+      artRunner(-1);
+      drawFires({}, B);
+      artText('答錯了', 24, 14, '#e8513a', 12);
+      artLabel('再閃 6 秒重問', W / 2, H - 12, '#2c9a5a');
     },
     rollAsh() {
       drawRoad(0);
-      const B = artRoll({ mode: 'dead', hp: 0, dieT: ROLL_DIE * 0.45 });
-      B.ashes = Array.from({ length: 50 }, (_, i) => ({ u: hash01(i), v: hash01(i + 50), vx: (hash01(i + 9) - 0.5) * 0.5, vy: -(0.15 + hash01(i + 4) * 0.45), r: 0.01 + hash01(i + 2) * 0.016, rot: i, vr: 1, gray: hash01(i + 77) }));
+      const B = artRoll({ mode: 'dead', hp: 0, dieT: ROLL_DIE * 0.4 });
+      B.ashes = Array.from({ length: 40 }, (_, i) => ({ u: hash01(i), v: hash01(i + 50), vx: (hash01(i + 9) - 0.5) * 0.5, vy: -(0.15 + hash01(i + 4) * 0.45), r: 0.014 + hash01(i + 2) * 0.02, rot: i, vr: 2, gray: hash01(i + 7) }));
       drawRoll(B);
-      artText('+7000', W / 2, 80, '#d99a00', 14);
+      artLabel('破關！', W / 2, H - 12, '#d99a00');
     },
     oppProvoke() {
       drawRoad(0);
