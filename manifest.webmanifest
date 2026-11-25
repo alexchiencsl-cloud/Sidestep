@@ -1,0 +1,26 @@
+{
+  "name": "閃身步！老婆來了快跑！",
+  "short_name": "閃身步",
+  "lang": "zh-TW",
+  "description": "三條跑道左右閃身，躲過老婆大人、婆婆，還要答對白人勳的問答才能破關！",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f1ea",
+  "theme_color": "#f4f1ea",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
